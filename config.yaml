@@ -1,0 +1,39 @@
+# MilkTea API - 配置
+# 通过浏览器里已打开的 AI Web 端对话页进行输入，并取回复通过 API 返回
+
+server:
+  host: "127.0.0.1"
+  port: 8765
+
+# 浏览器远程调试地址（需先以调试端口启动浏览器，再打开 AI 对话页）
+browser:
+  cdp_url: "http://127.0.0.1:9222"
+
+# 当前要桥接的站点，可选: doubao_web | qwen_web | auto
+# auto: 自动选用第一个能匹配到标签页的站点
+client: auto
+
+# 各站点选择器（按实际页面结构调整）
+# url_contains 可写一个或多个关键词，标签页 URL 包含任一即匹配
+clients:
+  doubao_web:
+    url_contains: ["doubao.com", "volcengine.com", "ark.cn"]   # 豆包/火山引擎/方舟等
+    input_selector: "textarea[placeholder*='输入'], textarea[placeholder*='发消息'], textarea"
+    send_key: "Enter"
+    # 豆包前端回复在 data-testid="message_text_content" 的容器内（EventStream 流式更新）
+    response_selector: "[data-testid=\"message_text_content\"]"
+    response_wait_timeout: 90
+    # 流式输出：等待内容稳定不再变化后再取（秒），0 表示不等待稳定
+    response_stream_stable_sec: 3
+  qwen_web:
+    # 优先用 qianwen.com 匹配千问主页，避免与豆包等混用
+    url_contains: ["qianwen.com", "qwen", "tongyi.aliyun.com", "dashscope.aliyun.com", "aliyun.com/dingtalk", "www.qianwen.com"]
+    # 千问输入框为 contenteditable div（role=textbox），非 textarea
+    input_selector: "[role=\"textbox\"][contenteditable=\"true\"]"
+    send_key: "Enter"
+    # 千问回复在 .markdown-pc-special-class / .qk-markdown 内（通义千问 Web 版），取 DOM 最后一个即为本次回复
+    response_selector: ".markdown-pc-special-class, .qk-markdown"
+    response_wait_timeout: 90
+    response_stream_stable_sec: 3
+
+response_wait_timeout: 90
